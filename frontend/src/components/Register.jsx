@@ -12,7 +12,7 @@ const Register = () => {
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
 
-  const Register = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (password !== confPassword) {
       setMsg("Password dan konfirmasi password tidak cocok");
@@ -29,88 +29,110 @@ const Register = () => {
     } catch (error) {
       if (error.response) {
         setMsg(error.response.data.msg);
+      } else {
+        setMsg("Terjadi kesalahan saat registrasi");
       }
     }
   };
 
   return (
-    <section className="hero has-background-grey-light is-fullheight is-fullwidth">
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-4-desktop">
-              <form onSubmit={Register} className="box">
-                <p className="has-text-centered">{msg}</p>
-                <div className="field mt-5">
-                  <label className="label">Name</label>
-                  <div className="controls">
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
+    <section className="section">
+      <div className="container">
+        <div className="columns is-centered">
+          <div className="column is-one-third">
+            <form onSubmit={handleRegister} className="box">
+              <h1 className="title has-text-centered">Daftar</h1>
+
+              {msg && (
+                <div className="notification is-danger is-light">{msg}</div>
+              )}
+
+              <div className="field">
+                <label className="label">Nama Lengkap</label>
+                <div className="control">
+                  <input
+                    className="input"
+                    type="text"
+                    placeholder="Nama lengkap"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Email</label>
+                <div className="control">
+                  <input
+                    className="input"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Jenis Kelamin</label>
+                <div className="control">
+                  <div className="select is-fullwidth">
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                    >
+                      <option value="Male">Laki-laki</option>
+                      <option value="Female">Perempuan</option>
+                    </select>
                   </div>
                 </div>
-                <div className="field mt-5">
-                  <label className="label">Email</label>
-                  <div className="controls">
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Password</label>
+                <div className="control">
+                  <input
+                    className="input"
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                <div className="field">
-                  <label className="label">Gender</label>
-                  <div className="control">
-                    <div className="select is-fullwidth">
-                      <select
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                      >
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                      </select>
-                    </div>
-                  </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Konfirmasi Password</label>
+                <div className="control">
+                  <input
+                    className="input"
+                    type="password"
+                    placeholder="Ulangi password"
+                    value={confPassword}
+                    onChange={(e) => setConfPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                <div className="field mt-5">
-                  <label className="label">Password</label>
-                  <div className="controls">
-                    <input
-                      type="password"
-                      className="input"
-                      placeholder="******"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="field mt-5">
-                  <label className="label">Confirm Password</label>
-                  <div className="controls">
-                    <input
-                      type="password"
-                      className="input"
-                      placeholder="******"
-                      value={confPassword}
-                      onChange={(e) => setConfPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="field mt-5">
-                  <button className="button is-success is-fullwidth">
-                    Register
-                  </button>
-                </div>
-                <Link to="/">Login</Link>
-              </form>
-            </div>
+              </div>
+
+              <div className="field">
+                <button className="button is-primary is-fullwidth">
+                  Daftar
+                </button>
+              </div>
+
+              <div className="has-text-centered mt-4">
+                <p>
+                  Sudah punya akun?{" "}
+                  <Link to="/login" className="has-text-link">
+                    Masuk di sini
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
       </div>

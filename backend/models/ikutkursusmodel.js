@@ -18,6 +18,11 @@ const IkutKursus = db.define("ikutkursus", {
     allowNull: false,
     defaultValue: "pending",
   },
+  status: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: "aktif",
+  },
 }, {
   freezeTableName: true,
 });

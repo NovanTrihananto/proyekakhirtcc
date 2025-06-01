@@ -13,59 +13,74 @@ const Login = () => {
     e.preventDefault();
     try {
       await axios.post(`${BASE_URL}/login`, {
-        email: email,
-        password: password,
+        email,
+        password,
       });
-
-      // Kalo berhasil login
       navigate("/dashboard");
     } catch (error) {
       if (error.response) {
         setMsg(error.response.data.message);
+      } else {
+        setMsg("Terjadi kesalahan saat login");
       }
     }
   };
 
   return (
-    <section className="hero has-background-grey-light is-fullheight is-fullwidth">
-      <div className="hero-body">
-        <div className="container">
-          <div className="columns is-centered">
-            <div className="column is-4-desktop">
-              <form onSubmit={Auth} className="box">
-                <p className="has-text-centered">{msg}</p>
-                <div className="field mt-5">
-                  <label className="label">Email or Username</label>
-                  <div className="controls">
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="Username"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
+    <section className="section">
+      <div className="container">
+        <div className="columns is-centered">
+          <div className="column is-one-third">
+            <form onSubmit={Auth} className="box">
+              <h1 className="title has-text-centered">Masuk</h1>
+
+              {msg && (
+                <div className="notification is-danger is-light">{msg}</div>
+              )}
+
+              <div className="field">
+                <label className="label">Email atau Username</label>
+                <div className="control">
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="email@example.com atau username"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
                 </div>
-                <div className="field mt-5">
-                  <label className="label">Password</label>
-                  <div className="controls">
-                    <input
-                      type="password"
-                      className="input"
-                      placeholder="******"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
+              </div>
+
+              <div className="field">
+                <label className="label">Password</label>
+                <div className="control">
+                  <input
+                    type="password"
+                    className="input"
+                    placeholder="********"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
                 </div>
-                <div className="field mt-5">
-                  <button className="button is-success is-fullwidth">
-                    Login
-                  </button>
-                </div>
-                <Link to="/register">Register</Link>
-              </form>
-            </div>
+              </div>
+
+              <div className="field">
+                <button className="button is-primary is-fullwidth">
+                  Masuk
+                </button>
+              </div>
+
+              <div className="has-text-centered mt-4">
+                <p>
+                  Belum punya akun?{" "}
+                  <Link to="/register" className="has-text-link">
+                    Daftar di sini
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
         </div>
       </div>

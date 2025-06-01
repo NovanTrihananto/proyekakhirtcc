@@ -26,6 +26,7 @@ const LandingPage = ({ user }) => {
   if (loading) return <p>Loading courses...</p>;
 
   return (
+    
     <div>
       {/* Hero Section */}
       <section className="hero is-primary is-large">
@@ -37,7 +38,7 @@ const LandingPage = ({ user }) => {
             </h2>
             <button
               className="button is-large is-light"
-              onClick={() => navigate(user ? "/dashboard" : "/register")}
+              onClick={() => navigate(user ? "/dashboard" : "/login")}
             >
               Mulai Belajar Sekarang
             </button>

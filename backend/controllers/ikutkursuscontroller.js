@@ -1,6 +1,24 @@
 // controllers/IkutKursusController.js
 import IkutKursus from "../models/ikutkursusmodel.js";
 import kursus from "../models/Kursusmodel.js";
+import User from "../models/UserModel.js";
+
+
+export const getAllIkutKursus = async (req, res) => {
+  try {
+    // Ambil semua data ikut kursus, bisa sekaligus include relasi User dan Kursus
+    const data = await IkutKursus.findAll({
+      include: [
+        { model: User, as: "user", attributes: ["id", "name", "email"] },
+        { model: kursus, as: "kursus", attributes: ["id", "Judul", "Guru"] },
+      ],
+    });
+    res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Gagal mengambil data ikut kursus" });
+  }
+};
 
 // GET semua kursus yang diikuti user
 export const getKursusDiikuti = async (req, res) => {
@@ -30,7 +48,7 @@ export const getKursusDiikuti = async (req, res) => {
 export const updateIkutKursus = async (req, res) => {
   try {
     const { id } = req.params; // id record ikutkursus yang mau diupdate
-    const { pembayaran, idUser, idKursus } = req.body; // field yang ingin diupdate
+    const { pembayaran, idUser, idKursus,status } = req.body; // field yang ingin diupdate
 
     // Cek dulu data ikutkursus berdasarkan id
     const ikutKursus = await IkutKursus.findByPk(id);
@@ -43,7 +61,7 @@ export const updateIkutKursus = async (req, res) => {
     if (pembayaran !== undefined) ikutKursus.pembayaran = pembayaran;
     if (idUser !== undefined) ikutKursus.idUser = idUser;
     if (idKursus !== undefined) ikutKursus.idKursus = idKursus;
-
+    if (status !== undefined) ikutKursus.status = status;
     await ikutKursus.save();
 
     res.json({ msg: "Data berhasil diupdate", data: ikutKursus });
@@ -57,7 +75,7 @@ export const updateIkutKursus = async (req, res) => {
 export const daftarKursus = async (req, res) => {
   try {
     console.log("BODY:", req.body); // cek apa yang diterima backend
-    const { idUser, idKursus, pembayaran } = req.body;
+    const { idUser, idKursus, pembayaran,status: kursusStatus } = req.body;
 
     if (!idUser || !idKursus) {
       return res.status(400).json({ msg: "idUser dan idKursus wajib diisi" });
@@ -75,6 +93,7 @@ export const daftarKursus = async (req, res) => {
       idUser,
       idKursus,
       pembayaran: pembayaran || "pending",
+      status: kursusStatus || "aktif", // tambahkan ini
     });
 
     res.status(201).json(newData);

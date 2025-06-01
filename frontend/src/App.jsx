@@ -8,7 +8,7 @@ import LandingPage from "./components/landingpage.jsx";
 import AddCourse from "./components/AddCource.jsx";
 import EditKursus from "./components/EditKursus.jsx";
 import DashboardUser from "./components/dashboarduser.jsx";
-
+import EditIkutKursus from "./components/Editikutkursus.jsx";
 
 function App() {
   return (
@@ -39,6 +39,16 @@ function App() {
             <>
               <Navbar />
               <AddCourse />
+            </>
+          }
+        />
+
+           <Route
+          path="/editikutkursus/:id"
+          element={
+            <>
+              <Navbar />
+              <EditIkutKursus />
             </>
           }
         />
