@@ -10,11 +10,11 @@ const DashboardUser = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-  if (!token) {
-    navigate("/login"); // redirect kalau belum login
-  }
-}, [token, navigate]);
+   useEffect(() => {
+     if (role && role !== "admin" && role !== "user") {
+       navigate("/landingpage"); // Ganti dengan halaman yang sesuai
+     }
+   }, [role, navigate]);
 
 
   const getCourses = useCallback(async () => {
