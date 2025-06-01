@@ -58,7 +58,7 @@ async function getUserById(req, res) {
 async function createUser(req, res) {
   try {
     // Mengambil name, email, gender, password dari request body
-    const { name, email, gender, password } = req.body;
+    const { name, email, gender, role, password } = req.body;
 
     // Ngecek apakah request body lengkap apa engga
     // Kalo kurang lengkap, masuk ke catch degnan error message "Field cannot be empty 😠" (400)
@@ -85,6 +85,7 @@ async function createUser(req, res) {
       name: name,
       email: email,
       gender: gender,
+      role: role|| 'user',
       password: encryptPassword,
     });
 

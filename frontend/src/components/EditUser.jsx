@@ -1,75 +1,38 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { BASE_URL } from "../utils";
-import { jwtDecode } from "jwt-decode";
+import useAxiosToken from "../hooks/useAxiosToken";
 
 const EditUser = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [gender, setGender] = useState("");
-  const navigate = useNavigate();
   const { id } = useParams();
-  const [token, setToken] = useState("");
-  const [expire, setExpire] = useState("");
+  const navigate = useNavigate();
+
+  // Pakai custom hook untuk axios dengan auto refresh token
+  const { axiosJWT, token } = useAxiosToken();
+
+  // Fungsi ambil user berdasarkan ID, dibungkus useCallback supaya bisa dipakai di useEffect
+  const getUserById = useCallback(async () => {
+    try {
+      const response = await axiosJWT.get(`${BASE_URL}/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const { name, email, gender } = response.data.data;
+      setName(name);
+      setEmail(email);
+      setGender(gender);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [axiosJWT, id, token]);
 
   useEffect(() => {
-  const refreshToken = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/token`, { withCredentials: true });
-      setToken(response.data.accessToken);
-      const decoded = jwtDecode(response.data.accessToken);
-      setExpire(decoded.exp);
-    } catch (error) {
-      setToken("");
-      navigate("/");
+    if (token) {
+      getUserById();
     }
-  };
-
-  refreshToken();
-}, []);
-
-  // Membuat instance axios khusus untuk JWT
-  const axiosJWT = axios.create();
-
-  // Interceptor akan dijalankan SETIAP KALI membuat request dengan axiosJWT
-  // Fungsinya buat ngecek + memperbarui access token sebelum request dikirim
-  axiosJWT.interceptors.request.use(
-    async (config) => {
-      try {
-        // Ambil waktu sekarang, simpan dalam variabel "currentDate"
-        const currentDate = new Date();
-
-        // Bandingkan waktu expire token dengan waktu sekarang
-        if (expire * 1000 < currentDate.getTime()) {
-          // Kalo access token expire, Request token baru ke endpoint /token
-          const response = await axios.get(`${BASE_URL}/token`);
-
-          // Update header Authorization dengan access token baru
-          config.headers.Authorization = `Bearer ${response.data.accessToken}`;
-
-          // Update token di state
-          setToken(response.data.accessToken);
-
-          // Decode token baru untuk mendapatkan informasi user
-          const decoded = jwtDecode(response.data.accessToken);
-
-          setName(decoded.name); // <- Update state dengan data user dari token
-          setExpire(decoded.exp); // <- Set waktu expire baru
-        }
-        return config;
-      } catch (error) {
-        // Kalo misal ada error, langsung balik ke halaman login
-        setToken("");
-        navigate("/");
-      }
-    },
-    (error) => {
-      // Kalo misal ada error, langsung balik ke halaman login
-      setToken("");
-      navigate("/");
-    }
-  );
+  }, [token, getUserById]);
 
   const updateUser = async (e) => {
     e.preventDefault();
@@ -79,29 +42,7 @@ const EditUser = () => {
         { name, email, gender },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      /*
-        Kenapa meskipun sudah diberi header authorization pada bagian interceptor,
-        tetap harus diberi header auth seperti kode di atas?
-        Karena header auth pada interceptor hanya diberikan jika token telah expired (>30 detik)
-
-        Jika token belum expired, maka akan menggunakan token yg ada di state
-      */
       navigate("/dashboard");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const getUserById = async () => {
-    try {
-      const response = await axiosJWT.get(`${BASE_URL}/users/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const { name, email, gender } = response.data.data;
-      setName(name);
-      setEmail(email);
-      setGender(gender);
     } catch (error) {
       console.log(error);
     }
@@ -123,6 +64,7 @@ const EditUser = () => {
               />
             </div>
           </div>
+
           <div className="field">
             <label className="label">Email</label>
             <div className="control">
@@ -135,20 +77,19 @@ const EditUser = () => {
               />
             </div>
           </div>
+
           <div className="field">
             <label className="label">Gender</label>
             <div className="control">
               <div className="select is-fullwidth">
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                >
+                <select value={gender} onChange={(e) => setGender(e.target.value)}>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </div>
             </div>
           </div>
+
           <div className="field">
             <button type="submit" className="button is-success mr-2">
               Update

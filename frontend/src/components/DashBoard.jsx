@@ -1,80 +1,21 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import useAxiosToken from "../hooks/useAxiosToken";
 import { BASE_URL } from "../utils";
 
 const Dashboard = () => {
-  const [name, setName] = useState("");
-  const [token, setToken] = useState("");
-  const [expire, setExpire] = useState("");
+  const { axiosJWT, token, name, role } = useAxiosToken();
   const [users, setUsers] = useState([]);
+  const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-  const refreshToken = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/token`);
-      setToken(response.data.accessToken);
-      const decoded = jwtDecode(response.data.accessToken);
-      setName(decoded.name);
-      setExpire(decoded.exp);
-      // Setelah token berhasil di-refresh, baru panggil getUsers()
-      getUsers(response.data.accessToken); // <- Kirim token langsung
-    } catch (error) {
-      setToken("");
-      navigate("/");
+    if (role && role !== "admin") {
+      navigate("/dashboarduser"); // Ganti dengan halaman yang sesuai
     }
-  };
-  refreshToken();
-}, []);
+  }, [role, navigate]);
 
-
-  // Membuat instance axios khusus untuk JWT
-  const axiosJWT = axios.create();
-
-  // Interceptor akan dijalankan SETIAP KALI membuat request dengan axiosJWT
-  // Fungsinya buat ngecek + memperbarui access token sebelum request dikirim
-  axiosJWT.interceptors.request.use(
-    async (config) => {
-      try {
-        // Ambil waktu sekarang, simpan dalam variabel "currentDate"
-        const currentDate = new Date();
-
-        // Bandingkan waktu expire token dengan waktu sekarang
-        if (expire * 1000 < currentDate.getTime()) {
-          // Kalo access token expire, Request token baru ke endpoint /token
-          const response = await axios.get(`${BASE_URL}/token`);
-
-          // Update header Authorization dengan access token baru
-          config.headers.Authorization = `Bearer ${response.data.accessToken}`;
-
-          // Update token di state
-          setToken(response.data.accessToken);
-
-          // Decode token baru untuk mendapatkan informasi user
-          const decoded = jwtDecode(response.data.accessToken);
-
-          setName(decoded.name); // <- Update state dengan data user dari token
-          setExpire(decoded.exp); // <- Set waktu expire baru
-        }
-        return config;
-      } catch (err) {
-        // Kalo misal ada error, langsung balik ke halaman login
-        setToken("");
-        navigate("/");
-      }
-    },
-    (error) => {
-      // Kalo misal ada error, langsung balik ke halaman login
-      setToken("");
-      navigate("/");
-    }
-  );
-
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     try {
       const response = await axiosJWT.get(`${BASE_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -83,33 +24,76 @@ const Dashboard = () => {
     } catch (error) {
       console.log(error);
     }
+  }, [axiosJWT, token]);
+
+  const getCourses = useCallback(async () => {
+    try {
+      const response = await axiosJWT.get(`${BASE_URL}/courses`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setCourses(response.data || []);
+    } catch (error) {
+      console.log(error);
+    }
+  }, [axiosJWT, token]);
+
+  const deleteCourse = async (id) => {
+    if (window.confirm("Yakin ingin menghapus kursus ini?")) {
+      try {
+        await axiosJWT.delete(`${BASE_URL}/courses/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        getCourses();
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`${BASE_URL}/users/${id}`, {
+      await axiosJWT.delete(`${BASE_URL}/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      getUsers();
+      getUsers(); // Refresh list after delete
     } catch (error) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    if (token && role === "admin") {
+      getUsers();
+      getCourses();
+    }
+  }, [token, role, getUsers, getCourses]);
+
   return (
     <div className="columns mt-5 is-centered">
-      <div className="column is-half">
-        <div className="mb-5">Halo, {name}</div>
-        <table className="table is-striped is-fullwidth">
+      <div className="column is-full">
+        <div className="mb-5">
+          Halo, {name} ({role})
+          {/* Tambahkan tombol ke Dashboard User */}
+          <button
+            className="button is-link ml-4"
+            onClick={() => navigate("/dashboarduser")}
+          >
+            Ke Dashboard User
+          </button>
+        </div>
+
+        {/* TABEL USERS */}
+        <h2 className="title is-4">Daftar Pengguna</h2>
+        <table className="table is-striped is-fullwidth mb-6">
           <thead>
             <tr>
               <th>No</th>
-              <th>Name</th>
+              <th>Nama</th>
               <th>Email</th>
               <th>Gender</th>
-              <th>Actions</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +114,69 @@ const Dashboard = () => {
                     onClick={() => deleteUser(user.id)}
                     className="button is-small is-danger"
                   >
-                    Delete
+                    Hapus
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h2 className="title is-4">Daftar Kursus</h2>
+        <div className="mb-4">
+          <Link to="/add-course" className="button is-primary">
+            + Tambah Kursus
+          </Link>
+        </div>
+
+        <table className="table is-striped is-fullwidth">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Judul</th>
+              <th>Guru</th>
+              <th>Waktu (jam)</th>
+              <th>Harga</th>
+              <th>Kategori</th>
+              <th>Deskripsi</th>
+              <th>Gambar</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {courses.map((course, index) => (
+              <tr key={course.id}>
+                <td>{index + 1}</td>
+                <td>{course.Judul}</td>
+                <td>{course.Guru}</td>
+                <td>{course.Waktu}</td>
+                <td>{course.harga}</td>
+                <td>{course.Kategori}</td>
+                <td>{course.Deskripsi}</td>
+
+                <td>
+                  {course.Img ? (
+                    <img
+                      src={`${BASE_URL}/images/${course.Img}`}
+                      alt={course.Judul}
+                      style={{ width: "100px", objectFit: "cover" }}
+                    />
+                  ) : (
+                    "Tidak ada gambar"
+                  )}
+                </td>
+                <td>
+                  <Link
+                    to={`/edit-kursus/${course.id}`}
+                    className="button is-small is-info mr-2"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => deleteCourse(course.id)}
+                    className="button is-small is-danger"
+                  >
+                    Hapus
                   </button>
                 </td>
               </tr>

@@ -9,6 +9,11 @@ const User = db.define(
     email: Sequelize.STRING,
     gender: Sequelize.STRING,
     password: Sequelize.STRING,
+      role: {
+    type: Sequelize.STRING,
+    allowNull: false,
+    defaultValue: 'user',
+  },
     refresh_token: Sequelize.TEXT,
   }
 );
