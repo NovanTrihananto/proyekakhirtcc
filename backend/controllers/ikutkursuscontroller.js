@@ -8,20 +8,50 @@ export const getKursusDiikuti = async (req, res) => {
     const userId = req.params.userId;
 
     const data = await IkutKursus.findAll({
-      where: { idUser: userId },
-      include: [
-        {
-          model: kursus,
-          attributes: ["id", "Judul", "Guru", "Waktu", "harga", "Img", "Deskripsi", "Kategori"],
-        },
-      ],
-    });
+  where: { idUser: userId },
+  include: [
+    {
+      model: kursus,
+      as : "kursus",
+      attributes: ["id", "Judul", "Guru", "Waktu", "harga", "Img", "Deskripsi", "Kategori"],
+    },
+  ],
+});
+
 
     res.json(data);
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }
 };
+
+
+    // UPDATE data ikut kursus (misal update pembayaran)
+export const updateIkutKursus = async (req, res) => {
+  try {
+    const { id } = req.params; // id record ikutkursus yang mau diupdate
+    const { pembayaran, idUser, idKursus } = req.body; // field yang ingin diupdate
+
+    // Cek dulu data ikutkursus berdasarkan id
+    const ikutKursus = await IkutKursus.findByPk(id);
+
+    if (!ikutKursus) {
+      return res.status(404).json({ msg: "Data ikut kursus tidak ditemukan" });
+    }
+
+    // Update fields yang dikirim, kalau ada
+    if (pembayaran !== undefined) ikutKursus.pembayaran = pembayaran;
+    if (idUser !== undefined) ikutKursus.idUser = idUser;
+    if (idKursus !== undefined) ikutKursus.idKursus = idKursus;
+
+    await ikutKursus.save();
+
+    res.json({ msg: "Data berhasil diupdate", data: ikutKursus });
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
+
 
 // POST daftar kursus
 export const daftarKursus = async (req, res) => {

@@ -8,5 +8,5 @@ User.hasMany(IkutKursus, { foreignKey: "idUser", constraints:true });
 IkutKursus.belongsTo(User, { foreignKey: "idUser", constraints:true });
 
 // Kursus ↔ IkutKursus
-kursus.hasMany(IkutKursus, { foreignKey: "idKursus", constraints:true });
-IkutKursus.belongsTo(kursus, { foreignKey: "idKursus", constraints:true });
+kursus.hasMany(IkutKursus, { foreignKey: "idKursus", constraints:true, as: "kursus" });
+IkutKursus.belongsTo(kursus, { foreignKey: "idKursus", constraints:true, as: "kursus" });
