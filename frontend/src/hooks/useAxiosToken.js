@@ -9,6 +9,7 @@ const useAxiosToken = () => {
   const [expire, setExpire] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
+    const [userId, setUserId] = useState("");
   const navigate = useNavigate();
 
   // Gunakan useRef supaya axiosJWT tetap konsisten (tidak bikin instance baru setiap render)
@@ -24,6 +25,7 @@ const useAxiosToken = () => {
         setName(decoded.name);
         setExpire(decoded.exp);
         setRole(decoded.role);
+        setUserId(decoded.id);
       } catch (error) {
         setToken("");
         navigate("/");
@@ -45,6 +47,7 @@ const useAxiosToken = () => {
           setExpire(decoded.exp);
           setName(decoded.name);
           setRole(decoded.role);
+          setUserId(decoded.id);
         }
         return config;
       },
@@ -60,7 +63,7 @@ const useAxiosToken = () => {
     };
   }, [expire, navigate, axiosJWT]);
 
-  return { axiosJWT, token, name, role };
+  return { axiosJWT, token, name, role, userId};
 };
 
 export default useAxiosToken;

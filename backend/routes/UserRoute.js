@@ -12,6 +12,7 @@ import { verifyToken } from "../middleware/VerifyToken.js";
 import { getAccessToken } from "../controllers/TokenController.js";
 import { verifyAdmin } from "../middleware/VerifyAdmin.js";
 
+
 const router = express.Router();
 
 router.get("/token", getAccessToken);

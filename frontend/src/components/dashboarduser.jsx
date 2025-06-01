@@ -4,10 +4,11 @@ import useAxiosToken from "../hooks/useAxiosToken";
 import { BASE_URL } from "../utils";
 
 const DashboardUser = () => {
-  const { axiosJWT, token, name, role } = useAxiosToken();
+  const { axiosJWT, token, name, role,userId  } = useAxiosToken();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+   const [msg, setMsg] = useState(""); 
   const navigate = useNavigate();
 
    useEffect(() => {
@@ -35,6 +36,25 @@ const DashboardUser = () => {
     }
   }, [token, role, getCourses]);
 
+const handleDaftar = async (idKursus) => {
+  try {
+    setMsg("");
+    const res = await axiosJWT.post(
+      `${BASE_URL}/ikutkursus`,
+      { idUser: userId, idKursus },  // kirim keduanya
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setMsg(`Berhasil daftar kursus: ${res.data.idKursus}`);
+  } catch (err) {
+      if (err.response && err.response.data && err.response.data.msg) {
+        setMsg(`Gagal daftar: ${err.response.data.msg}`);
+      } else {
+        setMsg("Gagal daftar kursus");
+      }
+      console.error(err);
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p className="has-text-danger">{error}</p>;
 
@@ -42,6 +62,7 @@ const DashboardUser = () => {
     <div>
       <h1>Selamat datang, {name}</h1>
       <h2>Daftar Kursus</h2>
+      {msg && <p>{msg}</p>}
       <div className="columns is-multiline">
         {courses.map((course) => (
           <div key={course.id} className="column is-one-third">
@@ -49,8 +70,12 @@ const DashboardUser = () => {
               <div className="card-content">
                 <p className="title">{course.Judul}</p>
                 <p className="subtitle">oleh {course.Guru}</p>
-                {/* Tombol Daftar dihapus atau diganti dengan info saja */}
-                {/* <button className="button is-primary">Daftar</button> */}
+                <button
+                  className="button is-primary"
+                  onClick={() => handleDaftar(course.id)}
+                >
+                  Daftar
+                </button>
               </div>
             </div>
           </div>

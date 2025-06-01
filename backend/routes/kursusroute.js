@@ -10,6 +10,7 @@ import {
 import { verifyAdmin } from "../middleware/VerifyAdmin.js";
 
 
+
 // Setup multer untuk upload gambar
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "public/images"),
@@ -30,5 +31,6 @@ router.put("/courses/:id", verifyAdmin, updateKursus);
 
 // DELETE hapus kursus by id, harus admin
 router.delete("/courses/:id", verifyAdmin, deleteKursus);
+
 
 export default router;
